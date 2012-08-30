@@ -4,7 +4,7 @@ Update history:
 	08/30/2012: initial checked in, compiled and mounted succesfully; 'ls' is not functioning, nothing else is tested
 
 How to install fusionfs:
-	0) This needs to be updated for BGP.
+	0) This needs to be updated for Bluegene/P (BGP).
 	1) Make sure all dependent libraries are specified, e.g. echo $LD_LIBRARY_PATH 
 		:/usr/local/lib:/home/dongfang/fusionFS/src/ffsnet/:/home/dongfang/fusionFS/src/udt4/src
 	2) Install FUSE 2.8 or later for your Linux distribution
