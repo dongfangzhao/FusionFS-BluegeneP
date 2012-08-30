@@ -1,45 +1,10 @@
 Author: dongfang.zhao@hawk.iit.edu
 
 Update history:
-	08/10/2012: add zht_get_openmode() and zht_set_openmode() in util.c, not tested. Will be tested with locking update on fusionfs.c
-	08/09/2012: update zht_operations with new serialized interfaces; passed testing scripts
-	08/03/2012: updated to latest ZHT package with Package interface (not tested)
-	07/31/2012: add C version Google Protocol Buffer (/src/gbuf) to update <k,v> pair to serialized string; syntactically tested, i.e. compiled and passed simple serialization; waiting for new ZHT interface
-	07/26/2012: add metadata benchmark; tested IOR on 10 nodes with two patterns: independent local IO and round-robin read-after-write
-	07/24/2012: for ZHT values, update PATH_MAX to ZHT_MAX_BUFF; found a ZHT bug for long value (>=1K); tested IOR on Fedora and HEC; create test script and pass on 1 node 
-	07/22/2012: fixed a bug in ffsnet.c::_getaddr(); tested IOzone on two nodes
-	07/21/2012: update ZHT for new _lookup() signature and return code, restructure code and update Makefiles
-	07/20/2012: major changes, tested on two nodes Fedora and Fusion
-	07/17/2012: remote file removal supported and tested on two nodes
-	07/16/2012: all one-node test cases have passed over two nodes - Fedora and Fusion.
-	07/15/2012: started testing on single node (test_plan.txt added): directory passed; files on root directory passed 
-	07/09/2012: clean up the warnings
-	07/05/2012: hsearch replaced by ZHT
-  	06/27/2012: read with UDT
-	06/01/2012: read/write with LFTP
-	05/22/2012: read/write with SCP
-
-TODO:
-	*[Important] Add lock/unlock to ZHT to synchronize concurrent accesses	
-	*[Important] Add data replicas
-	*[Important] Deploy FusionFS on 1K node
-	*[Nice to Have] Instead of moving primary copy, support push-back of updates
-	*[Nice to have] Support more POSIX interfaces, e.g. rename(), link(), slink() etc
-	
-What is FusionFS
-	- In short, FusionFS is a completely distributed file system, that said, nothing (at all) is centralized
-		including meta data management. 
-
-What is working
-	- File create/open/read/write/close/remove
-	- Direcotry create/read/remove
-	
-What is NOT working (will not be added unless requested)
-	- File rename/link/slink
-	- Directory rename
-	- Other POSIX interfaces 
+	08/30/2012: initial checked in, compiled and mounted succesfully; 'ls' is not functioning, nothing else is tested
 
 How to install fusionfs:
+	0) This needs to be updated for BGP.
 	1) Make sure all dependent libraries are specified, e.g. echo $LD_LIBRARY_PATH 
 		:/usr/local/lib:/home/dongfang/fusionFS/src/ffsnet/:/home/dongfang/fusionFS/src/udt4/src
 	2) Install FUSE 2.8 or later for your Linux distribution
@@ -52,6 +17,7 @@ How to install fusionfs:
 	9) ./cleanALL to `make clean` everything
 
 How to use fusionfs:
+	0) This needs to be udpated for BGP.
 	1) ./clearRootDir to cleanup your scratch data
 	2) ./start_service to start the backup services
 	3) ./start to run fusionfs
