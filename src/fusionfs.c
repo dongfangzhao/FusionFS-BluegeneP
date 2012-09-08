@@ -217,10 +217,13 @@ int fusion_getattr(const char *path, struct stat *statbuf)
 	fusion_fullpath(fpath, path);
 
 	char res[ZHT_MAX_BUFF] = {0};
+	log_msg("\n =====DFZ debug: file %s line %d \n\n", __FILE__, __LINE__);
 	int status = zht_lookup(path, res);
+	log_msg("\n =====DFZ debug: file %s line %d \n\n", __FILE__, __LINE__);
 
 	char myaddr[PATH_MAX] = {0};
 	net_getmyip(myaddr);
+	log_msg("\n =====DFZ debug: file %s line %d \n\n", __FILE__, __LINE__);
 
 	if (ZHT_LOOKUP_FAIL == status) { /* if not found in ZHT */
 		log_msg("\n ===========DFZ debug: _getattr() %s does not exist \n\n", path);

@@ -55,6 +55,15 @@ int net_getmyip(char *addr) {
 //	strcpy(addr, inet_ntoa(*((struct in_addr *)host->h_addr)));
 ////	printf("IP Address : %s\n", inet_ntoa(*((struct in_addr *)host->h_addr)));
 
+	/* this is only for BG/P */
+	FILE *ptr;
+	char *command = "/home/dzhao/torusIP.sh";
+	if (NULL != (ptr = popen(command, "r"))) {
+		fgets(addr, 256, ptr);
+	}
+	return 0;
+
+	/*The following code does not work on BG/P */
 	struct ifaddrs * ifAddrStruct = NULL;
 	struct ifaddrs * ifa = NULL;
 	void * tmpAddrPtr = NULL;
