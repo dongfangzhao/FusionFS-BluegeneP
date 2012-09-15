@@ -36,6 +36,10 @@ FILE *log_open()
 
 void log_msg(const char *format, ...)
 {
+
+	/*comment the following to enable logging, expected performance degradation*/
+	return;
+
     va_list ap;
     va_start(ap, format);
 

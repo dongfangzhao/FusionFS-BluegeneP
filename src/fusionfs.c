@@ -225,8 +225,13 @@ int fusion_getattr(const char *path, struct stat *statbuf)
 	net_getmyip(myaddr);
 	log_msg("\n =====DFZ debug: file %s line %d \n\n", __FILE__, __LINE__);
 
+
+
 	if (ZHT_LOOKUP_FAIL == status) { /* if not found in ZHT */
 		log_msg("\n ===========DFZ debug: _getattr() %s does not exist \n\n", path);
+
+		/*DFZ: uncomment this for metadata benchmark*/
+		return -1;
 
 		/*if path is an existing directory*/
 		char dirname[PATH_MAX] = {0};
@@ -253,6 +258,9 @@ int fusion_getattr(const char *path, struct stat *statbuf)
 	}
 	else { /* if file exists in ZHT */
 		log_msg("\n ===========DFZ debug: _getattr() zht_lookup() = %s. \n\n", res);
+
+		/*DFZ: uncomment this for metadata benchmark*/
+		return 0;
 
 		if (access(fpath, F_OK)) { /*if it isn't on this node, copy it over*/
 
@@ -460,15 +468,6 @@ int fusion_unlink(const char *path)
 	log_msg("fusion_unlink(path=\"%s\")\n", path);
 	fusion_fullpath(fpath, path);
 
-	/*if this file doesn't exist*/
-	char val[ZHT_MAX_BUFF] = {0};
-	int stat = zht_lookup(path, val);
-	if (ZHT_LOOKUP_FAIL == stat) {
-		fusion_error("_unlink() trying to remove a nonexistent file");
-		return -1;
-	}
-
-
 	/*remove the file from its parent dir in ZHT*/
 	char dirname[PATH_MAX] = {0}, fname[PATH_MAX] = {0};
 	char *pch = strrchr(path, '/');
@@ -480,6 +479,21 @@ int fusion_unlink(const char *path)
 	char oldaddr[PATH_MAX] = {0};
 	zht_lookup(path, oldaddr);
 	zht_remove(path);
+
+	/*DFZ: Uncomment the following for only metadata benchmark, i.e. don't really remove anything*/
+	return 0;
+
+	/*if this file doesn't exist*/
+	char val[ZHT_MAX_BUFF] = {0};
+	int stat = zht_lookup(path, val);
+	if (ZHT_LOOKUP_FAIL == stat) {
+		fusion_error("_unlink() trying to remove a nonexistent file");
+		return -1;
+	}
+
+	/*
+	 * The following is to really remove the file
+	 */
 
 	/*if it's a local operation, we are done here*/
 	char myip[PATH_MAX] = {0};
@@ -607,6 +621,9 @@ int fusion_utime(const char *path, struct utimbuf *ubuf) {
 
 	log_msg("\nfusion_utime(path=\"%s\", ubuf=0x%08x)\n", path, ubuf);
 	fusion_fullpath(fpath, path);
+
+	/*DFZ: uncomment this for metadata benchmark*/
+	return 0;
 
 	retstat = utime(fpath, ubuf);
 	if (retstat < 0)
@@ -829,6 +846,9 @@ int fusion_release(const char *path, struct fuse_file_info *fi)
 	// We need to close the file.  Had we allocated any resources
 	// (buffers etc) we'd need to free them here as well.
 	retstat = close(fi->fh);
+
+	/*DFZ: uncomment this for metadata benchmark*/
+	return 0;
 
 	/*if this is just a local IO, we are all set*/
 	char myip[PATH_MAX] = {0};
@@ -1222,6 +1242,9 @@ int fusion_access(const char *path, int mask) {
 	log_msg("\nfusion_access(path=\"%s\", mask=0%o)\n", path, mask);
 	fusion_fullpath(fpath, path);
 
+	/*DFZ: uncomment the following only for metadata benchmark*/
+	return 0;
+
 	retstat = access(fpath, mask);
 
 	if (retstat < 0)
@@ -1265,13 +1288,6 @@ int fusion_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 		return -1;
 	}
 
-	/*create the local file*/
-	fd = creat(fpath, mode);
-	if (fd < 0)
-		retstat = fusion_error("fusion_create creat");
-	fi->fh = fd;
-	log_fi(fi);
-
 	/*add the filename to its parent path in the ZHT entry*/
 	char dirname[PATH_MAX] = {0};
 	char *pch = strrchr(path, '/');
@@ -1294,6 +1310,17 @@ int fusion_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	if (zht_insert(path, addr))
 		log_msg("\n================ERROR _create(): failed to insert <%s, %s> to ZHT. \n", path, addr);
 
+
+	/*create the local file*/
+	//DFZ: comment the following for metadata test only, i.e. file creation
+//	fd = creat(fpath, mode);
+//	if (fd < 0)
+//		retstat = fusion_error("fusion_create creat");
+	fd = 3;
+	retstat = 0;
+
+	fi->fh = fd;
+	log_fi(fi);
 	return retstat;
 }
 

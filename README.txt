@@ -1,6 +1,7 @@
 Author: dongfang.zhao@hawk.iit.edu
 
 Update history:
+	09/15/2012: some ad-hoc changes to fusionFS for metadata benchmark for ZHT-IPDPS submission
 	09/08/2012: fusionFS running fine on a single work node on BluegeneP. IOZone result: read 48 MB/s, write 23 MB/s
 	08/30/2012: initial checked in, compiled and mounted succesfully; 'ls' is not functioning, nothing else is tested
 
