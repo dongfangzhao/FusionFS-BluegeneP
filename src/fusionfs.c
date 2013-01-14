@@ -7,6 +7,7 @@
  *
  *  01/14/2013:
  *  	- Replica added, affected function: _release()
+ *  	- zht base updated
  * 	07/19/2012:
  * 		- A major change on design: fusion_create() always create file on local node
  * 	07/17/2012:

@@ -16,4 +16,7 @@ rm fusionfs.log
 cd ./test
 make clean
 
+cd ./bgp_script
+./remove_cobalt_log.sh
+
 echo =========Clean succeed==========
