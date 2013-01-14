@@ -12,5 +12,6 @@ int zht_lookup(const char *key, char *val);
 int zht_remove(const char *key);
 
 int net_getmyip(char *ip);
+int net_neighborIP(char*, char*, char*);
 
 #endif

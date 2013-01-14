@@ -4,6 +4,9 @@
  * Author: dongfang@ieee.org
  *
  * Update history:
+ *
+ *  01/14/2013:
+ *  	- Replica added, affected function: _release()
  * 	07/19/2012:
  * 		- A major change on design: fusion_create() always create file on local node
  * 	07/17/2012:
@@ -231,7 +234,7 @@ int fusion_getattr(const char *path, struct stat *statbuf)
 		log_msg("\n ===========DFZ debug: _getattr() %s does not exist \n\n", path);
 
 		/*DFZ: uncomment this for metadata benchmark*/
-		return -1;
+		//return -1;
 
 		/*if path is an existing directory*/
 		char dirname[PATH_MAX] = {0};
@@ -260,7 +263,7 @@ int fusion_getattr(const char *path, struct stat *statbuf)
 		log_msg("\n ===========DFZ debug: _getattr() zht_lookup() = %s. \n\n", res);
 
 		/*DFZ: uncomment this for metadata benchmark*/
-		return 0;
+		//return 0;
 
 		if (access(fpath, F_OK)) { /*if it isn't on this node, copy it over*/
 
@@ -481,7 +484,7 @@ int fusion_unlink(const char *path)
 	zht_remove(path);
 
 	/*DFZ: Uncomment the following for only metadata benchmark, i.e. don't really remove anything*/
-	return 0;
+	//return 0;
 
 	/*if this file doesn't exist*/
 	char val[ZHT_MAX_BUFF] = {0};
@@ -623,7 +626,7 @@ int fusion_utime(const char *path, struct utimbuf *ubuf) {
 	fusion_fullpath(fpath, path);
 
 	/*DFZ: uncomment this for metadata benchmark*/
-	return 0;
+	//return 0;
 
 	retstat = utime(fpath, ubuf);
 	if (retstat < 0)
@@ -848,17 +851,35 @@ int fusion_release(const char *path, struct fuse_file_info *fi)
 	retstat = close(fi->fh);
 
 	/*DFZ: uncomment this for metadata benchmark*/
-	return 0;
+	//return 0;
 
-	/*if this is just a local IO, we are all set*/
+	/*if this is just a local IO, we are all set
+	 *
+	 * Well the above is true, only if duplication is not involved
+	 * */
+
+
 	char myip[PATH_MAX] = {0};
 	net_getmyip(myip);
 
 	char nodeaddr[PATH_MAX] = {0};
 	zht_lookup(path, nodeaddr);
 
+	/*find my neighbor IPs*/
+	char prev_ip[100] = {0};
+	char next_ip[100] = {0};
+	net_neighborIP(myip, prev_ip, next_ip);
+
 	if (!strcmp(myip, nodeaddr)) {
-		return retstat;
+
+		if (!iswritten)
+			return retstat;
+
+		else { //local write will trigger two updates on neighbor nodes
+			ffs_sendfile_c("udt", prev_ip, "9000", fpath, fpath);
+			ffs_sendfile_c("udt", next_ip, "9000", fpath, fpath);
+		}
+
 	}
 
 	/*dealing with the remote copy*/
@@ -875,6 +896,11 @@ int fusion_release(const char *path, struct fuse_file_info *fi)
 		char myip[PATH_MAX] = {0};
 		net_getmyip(myip);
 		zht_update(path, myip);
+
+		/*update replicas*/
+		ffs_sendfile_c("udt", prev_ip, "9000", fpath, fpath);
+		ffs_sendfile_c("udt", next_ip, "9000", fpath, fpath);
+
 		/*TODO: potentially, need to update the parent directory in ZHT
 		 * because the physical directory is also created in the new node*/
 
@@ -1205,6 +1231,7 @@ int fusion_fsyncdir(const char *path, int datasync, struct fuse_file_info *fi) {
 // FUSE).
 void *fusion_init(struct fuse_conn_info *conn) {
 
+	printf("\n fusionfs init() succeeds. \n");
 	log_msg("\nfusion_init()\n");
 
 
@@ -1243,7 +1270,7 @@ int fusion_access(const char *path, int mask) {
 	fusion_fullpath(fpath, path);
 
 	/*DFZ: uncomment the following only for metadata benchmark*/
-	return 0;
+	//return 0;
 
 	retstat = access(fpath, mask);
 
@@ -1312,12 +1339,12 @@ int fusion_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 
 
 	/*create the local file*/
-	//DFZ: comment the following for metadata test only, i.e. file creation
-//	fd = creat(fpath, mode);
-//	if (fd < 0)
-//		retstat = fusion_error("fusion_create creat");
-	fd = 3;
-	retstat = 0;
+	//DFZ: comment the following for metadata benchmark test only, i.e. file creation
+	fd = creat(fpath, mode);
+	if (fd < 0)
+		retstat = fusion_error("fusion_create creat");
+//	fd = 3;
+//	retstat = 0;
 
 	fi->fh = fd;
 	log_fi(fi);
@@ -1479,40 +1506,40 @@ int main(int argc, char *argv[]) {
 	/*
 	 * DFZ: test gbuf starts
 	 */
-	printf("\n=====Start testing Google Protocol Buffer=====\n\n");
-	size_t size = 0, size2 = 0;
-
-	Package pkg = PACKAGE__INIT;
-	Package *pkg_rtn;
-
-	/* test data */
-	pkg.has_replicano = 1; /* This is in need if this int32 is optional */
-	pkg.replicano = 5;
-	pkg.has_operation = 1;
-	pkg.operation = 3;
-	pkg.virtualpath = "mykey";
-	pkg.realfullpath = "mypathname";
-
-	/* pack the data */
-	size = package__get_packed_size(&pkg);
-	unsigned char *packed = malloc(size);
-	size2 = package__pack(&pkg, packed);
-	assert(size == size2);
-
-	printf("\n=====DFZ debug gbuf: packed = %s. \n\n", packed);
-
-	/* unpack the data */
-	pkg_rtn = package__unpack(NULL, size, packed);
-
-	/* verify the matchings */
-	printf("dfz debug: pkg_rtn->replicano = %d \n", pkg_rtn->replicano);
-	printf("dfz debug: pkg_rtn->operation = %d \n", pkg_rtn->operation);
-	printf("dfz debug: pkg_rtn->virtualpath = %s \n", pkg_rtn->virtualpath);
-	printf("dfz debug: pkg_rtn->realfullpath = %s \n", pkg_rtn->realfullpath);
-
-	package__free_unpacked(pkg_rtn, NULL);
-	free(packed);
-	printf("\n=====Finish testing Google Protocol Buffer=====\n\n");
+//	printf("\n=====Start testing Google Protocol Buffer=====\n\n");
+//	size_t size = 0, size2 = 0;
+//
+//	Package pkg = PACKAGE__INIT;
+//	Package *pkg_rtn;
+//
+//	/* test data */
+//	pkg.has_replicano = 1; /* This is in need if this int32 is optional */
+//	pkg.replicano = 5;
+//	pkg.has_operation = 1;
+//	pkg.operation = 3;
+//	pkg.virtualpath = "mykey";
+//	pkg.realfullpath = "mypathname";
+//
+//	/* pack the data */
+//	size = package__get_packed_size(&pkg);
+//	unsigned char *packed = malloc(size);
+//	size2 = package__pack(&pkg, packed);
+//	assert(size == size2);
+//
+//	printf("\n=====DFZ debug gbuf: packed = %s. \n\n", packed);
+//
+//	/* unpack the data */
+//	pkg_rtn = package__unpack(NULL, size, packed);
+//
+//	/* verify the matchings */
+//	printf("dfz debug: pkg_rtn->replicano = %d \n", pkg_rtn->replicano);
+//	printf("dfz debug: pkg_rtn->operation = %d \n", pkg_rtn->operation);
+//	printf("dfz debug: pkg_rtn->virtualpath = %s \n", pkg_rtn->virtualpath);
+//	printf("dfz debug: pkg_rtn->realfullpath = %s \n", pkg_rtn->realfullpath);
+//
+//	package__free_unpacked(pkg_rtn, NULL);
+//	free(packed);
+//	printf("\n=====Finish testing Google Protocol Buffer=====\n\n");
 	/*
 	 *  DFZ: test gbuf ends
 	 */

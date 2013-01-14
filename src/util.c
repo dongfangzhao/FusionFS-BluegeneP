@@ -1,4 +1,6 @@
 /**
+ * DFZ, 01/14/2013, added function: net_neighborIP
+ *
  * DFZ, 08/08/2012: updated with serialization interface
  *
  * DFZ, 07/14/2012: change zht_lookup() interface
@@ -30,6 +32,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/xattr.h>
 
@@ -41,6 +44,69 @@
 
 #include "log.h"
 #include "util.h"
+
+/*
+ * return the IP of prev and next node.
+ */
+int net_neighborIP(char *base, char *prev, char *next)
+{
+	/*I hate to use hardcoded path, but this is Bluegene/P ... */
+	char *nodelist_location = "/home/dzhao/persistent/neighbor";
+
+	FILE *fp = fopen (nodelist_location, "r");
+	if (! fp) {
+		printf("\n Error opened neighbor file.");
+		return 1;
+	}
+
+	/*show me total lines, and find out the base location*/
+	int tot_line = 0;
+	int base_loc = -1;
+	int length = strlen(base);
+	char line[100], curr_ip[100];
+	while (fgets(line, sizeof(line), fp)) {
+		memcpy(curr_ip, line, length);
+		curr_ip[length] = '\0';
+
+		if (! strcmp(curr_ip, base) ) {
+			base_loc = tot_line;
+		}
+
+		tot_line++;
+	}
+	if (-1 == base_loc) //not found the base IP, something is wrong...
+	{
+		printf("\n Base node ip not found in neighbor file. \n");
+		return 1;
+	}
+	printf("\n dfz debug: tot_line = %d, base_loc = %d \n", tot_line, base_loc);
+
+	/*locate the prev and next ip*/
+	int prev_num = (base_loc - 1) % tot_line;
+	int next_num = (base_loc + 1) % tot_line;
+	printf("\n dfz debug: prev_num = %d, next_num = %d \n", prev_num, next_num);
+	fseek(fp, 0, SEEK_SET);
+	int i = 0;
+	while (fgets(line, sizeof(line), fp))
+	{
+		if (i == prev_num)
+		{
+			memcpy(prev, line, length);
+			prev[length] = '\0';
+		}
+		if (i == next_num)
+		{
+			memcpy(next, line, length);
+			prev[length] = '\0';
+		}
+
+
+		i++;
+	}
+
+	fclose(fp);
+	return 0;
+}
 
 /*
  * get the ip address of the local machine

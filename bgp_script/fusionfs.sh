@@ -18,47 +18,47 @@ echo "" >> /intrepid-fs0/users/dzhao/persistent/worknode_addr.txt
 echo "`/home/dzhao/torusIP.sh` 50000" >> /intrepid-fs0/users/dzhao/persistent/neighbor
 
 #load libraries 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/dzhao/bin/fuse/lib:/home/dzhao/bin/gbuf/lib:/home/dzhao/bin/gbuf-c/lib:/home/dzhao/fusionFS/src/udt/src:/home/dzhao/fusionFS/src/ffsnet
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/dzhao/bin/fuse/lib:/home/dzhao/bin/gbuf/lib:/home/dzhao/bin/gbuf-c/lib:/home/dzhao/fusionFS-github/src/udt/src:/home/dzhao/fusionFS-github/src/ffsnet
 
 #start services
-/home/dzhao/fusionFS/src/ffsnet/ffsnetd 2>&1 1>/dev/null &
-/home/dzhao/fusionFS/src/zht/bin/server_zht 50000 /intrepid-fs0/users/dzhao/persistent/neighbor /intrepid-fs0/users/dzhao/persistent/zht.cfg TCP 2>&1 1>/dev/null &
+/home/dzhao/fusionFS-github/src/ffsnet/ffsnetd 2>&1 1>/dev/null &
+/home/dzhao/fusionFS-github/src/zht/bin/server_zht 50000 /intrepid-fs0/users/dzhao/persistent/neighbor /intrepid-fs0/users/dzhao/persistent/zht.cfg TCP 2>&1 1>/dev/null &
 
 #start fusionFS
-mkdir /dev/shm/rootdir
-mkdir /dev/shm/mountdir
+mkdir -p /dev/shm/rootdir
+mkdir -p /dev/shm/mountdir
 
-/home/dzhao/fusionFS/src/fusionfs -o allow_other -o direct_io /dev/shm/rootdir /dev/shm/mountdir 
+/home/dzhao/fusionFS-github/src/fusionfs -o allow_other -o direct_io /dev/shm/rootdir /dev/shm/mountdir 
 
 #####################
 ### run benchmarks ##
 #####################
-myip=`/home/dzhao/torusIP.sh`
-cd /dev/shm/mountdir
-RANDOM=`convert $myip`
-rand=$RANDOM
-lag=$(( $rand % 10 ))
-sleep $lag
-mkdir 'd_'$myip
+#myip=`/home/dzhao/torusIP.sh`
+#cd /dev/shm/mountdir
+#RANDOM=`convert $myip`
+#rand=$RANDOM
+#lag=$(( $rand % 10 ))
+#sleep $lag
+#mkdir 'd_'$myip
 #cd 'd_'$myip
-
+#
 #create 1k files on 10 dirs
-start=`date +%s`
+#start=`date +%s`
 #for j in {1..10}
 #do
 #	mkdir d_$j
 #	cd d_$j
-	for i in {1..5000}  
-	do 
-		touch 'd_'$myip'/'f_$i
-		rm 'd_'$myip'/'f_$i
-	done	
+#	for i in {1..5000}  
+#	do 
+#		touch 'd_'$myip'/'f_$i
+#		rm 'd_'$myip'/'f_$i
+#	done	
 #	cd ..
 #done
-end=`date +%s`
-
-diff=$(( $end - $start ))
-echo "$myip $rand $lag $start $end $diff" >> /intrepid-fs0/users/dzhao/persistent/result
+#end=`date +%s`
+#
+#diff=$(( $end - $start ))
+#echo "$myip $rand $lag $start $end $diff" >> /intrepid-fs0/users/dzhao/persistent/result
 
 
 

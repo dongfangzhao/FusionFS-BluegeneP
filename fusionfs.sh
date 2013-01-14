@@ -14,8 +14,8 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/dzhao/bin/fuse/lib:/home/dzhao/bin
 /home/dzhao/fusionFS/src/zht/bin/server_zht 50000 /intrepid-fs0/users/dzhao/persistent/neighbor /intrepid-fs0/users/dzhao/persistent/zht.cfg TCP 2>&1 1>/dev/null &
 
 #start fusionFS
-mkdir /dev/shm/rootdir
-mkdir /dev/shm/mountdir
+mkdir -p /dev/shm/rootdir
+mkdir -p /dev/shm/mountdir
 
 /home/dzhao/fusionFS/src/fusionfs /dev/shm/rootdir /dev/shm/mountdir
 
