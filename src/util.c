@@ -82,7 +82,7 @@ int net_neighborIP(char *base, char *prev, char *next)
 	printf("\n dfz debug: tot_line = %d, base_loc = %d \n", tot_line, base_loc);
 
 	/*locate the prev and next ip*/
-	int prev_num = (base_loc - 1) % tot_line;
+	int prev_num = (base_loc - 1 + tot_line) % tot_line;
 	int next_num = (base_loc + 1) % tot_line;
 	printf("\n dfz debug: prev_num = %d, next_num = %d \n", prev_num, next_num);
 	fseek(fp, 0, SEEK_SET);
@@ -295,10 +295,16 @@ int zht_free()
 
 int zht_insert(const char *key, const char *value)
 {
-//	return c_zht_insert2(key, value);
+
+//	fprintf(stderr, "dfz debug: in zht_insert(): key = %s, value = %s. \n", key, value);
+	log_msg("DFZ debug: in zht_insert(): key = %s, value = %s. \n\n", key, value);
+
+	//	return c_zht_insert2(key, value);
 	Package package = PACKAGE__INIT; // Package
 	package.virtualpath = (char*)key;
 	package.realfullpath = (char*)value;
+	package.has_isdir = true;
+	package.isdir = false;
 	package.has_operation = true;
 	package.operation = 3; //1 for look up, 2 for remove, 3 for insert
 
@@ -312,6 +318,12 @@ int zht_insert(const char *key, const char *value)
 	int ret = c_zht_insert(buf);
 	if (ret)
 		fprintf(stderr, "c_zht_insert, return code %d. \n", ret);
+
+	/* test ZHT insert */
+//	char tmpstr[ZHT_MAX_BUFF] = {0};
+//	zht_lookup(key, tmpstr);
+//	fprintf(stderr, "dfz debug: tmpstr = %s. \n", tmpstr);
+
 
 	free(buf); // Free the allocated serialized buffer
 
@@ -331,8 +343,8 @@ int zht_lookup(const char *key, char *val)
 
 	Package package = PACKAGE__INIT; // Package
 	package.virtualpath = (char*)key;
-	package.realfullpath = "";
-	package.has_operation = true;
+//	package.realfullpath = "";
+//	package.has_operation = true;
 	package.operation = 1; //1 for look up, 2 for remove, 3 for insert
 
 	len = package__get_packed_size(&package);
@@ -361,6 +373,9 @@ int zht_lookup(const char *key, char *val)
 		strcpy(val, lkPackage->realfullpath);
 		package__free_unpacked(lkPackage, NULL);
 	}
+
+	//fprintf(stderr, "dfz debug: in zht_lookup(): val = %s. \n", val);
+	log_msg("DFZ debug: in zht_lookup(): key = %s, val = %s. \n\n", key, val);
 
 	free(buf); // Free the allocated serialized buffer
 

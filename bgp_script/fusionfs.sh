@@ -23,6 +23,8 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/dzhao/bin/fuse/lib:/home/dzhao/bin
 #start services
 /home/dzhao/fusionFS-github/src/ffsnet/ffsnetd 2>&1 1>/dev/null &
 /home/dzhao/fusionFS-github/src/zht/bin/server_zht 50000 /intrepid-fs0/users/dzhao/persistent/neighbor /intrepid-fs0/users/dzhao/persistent/zht.cfg TCP 2>&1 1>/dev/null &
+#/home/dzhao/fusionFS-github/src/ffsnet/ffsnetd &
+#/home/dzhao/fusionFS-github/src/zht/bin/server_zht 50000 /intrepid-fs0/users/dzhao/persistent/neighbor /intrepid-fs0/users/dzhao/persistent/zht.cfg TCP &
 
 #start fusionFS
 mkdir -p /dev/shm/rootdir

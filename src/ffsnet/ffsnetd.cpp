@@ -6,6 +6,7 @@
  * Author: dzhao8@hawk.iit.edu
  *
  * Update history:
+ * 		- 01/15/2013: add parent directory if necessary for upload mode.
  *		- 07/18/2012: add mkdir(), this is not being used for now. It's not been tested either.
  * 		- 07/17/2012: add rmfile()
  * 		- 07/07/2012: better error handling - close file handle and iofs if failure occurs
@@ -146,6 +147,17 @@ void* transfile(void* usocket)
 		}
 		file[len] = '\0';
 
+		/*create the parent paths if necessary*/
+		char pathname[PATH_MAX] = {0};
+		const char *pch = strrchr(file, '/');
+		strncpy(pathname, file, pch - file);
+		if (access(pathname, F_OK)) {
+			char cmd[PATH_MAX] = {0};
+			strcpy(cmd, "mkdir -p ");
+			strcat(cmd, pathname);
+			system(cmd);
+		}
+
 		/* open the file to write */
 		fstream ofs(file, ios::out | ios::binary | ios::trunc);
 		int64_t recvsize; 
@@ -209,7 +221,7 @@ void* transfile(void* usocket)
 		}
 		file[len] = '\0';
 
-		/* open the file */
+		/* open the file to read */
 		fstream ifs(file, ios::in | ios::binary);
 		ifs.seekg(0, ios::end);
 		int64_t size = ifs.tellg();
