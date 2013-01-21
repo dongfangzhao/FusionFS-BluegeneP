@@ -3,6 +3,16 @@
  *
  * Author: dongfang@ieee.org
  *
+ * ==================================Metadata Benchmark begin======================
+ * The following functions affected when touching files:
+ * _getattr()
+ * _create()
+ * _fgetattr()
+ * _flush()
+ * _release()
+ * ==================================Metadata Benchmark end======================
+ *
+ *
  * Update history:
  *
  *  01/14/2013:
@@ -285,9 +295,6 @@ int fusion_getattr(const char *path, struct stat *statbuf)
 //	}
 	else { /* if file exists in ZHT */
 		log_msg("\n ===========DFZ debug: _getattr() zht_lookup() = %s. \n\n", res);
-
-		/*DFZ: uncomment this for metadata benchmark*/
-		//return 0;
 
 		if (access(fpath, F_OK)) { /*if it isn't on this node, copy it over*/
 
@@ -816,6 +823,9 @@ int fusion_flush(const char *path, struct fuse_file_info *fi)
 {
 	int retstat = 0;
 
+	// dfz: for metadata benchmark
+//	return 0;
+
 	log_msg("\nfusion_flush(path=\"%s\", fi=0x%08x)\n", path, fi);
 	// no need to get fpath on this one, since I work from fi->fh not the path
 	log_fi(fi);
@@ -846,6 +856,10 @@ int fusion_flush(const char *path, struct fuse_file_info *fi)
  */
 int fusion_release(const char *path, struct fuse_file_info *fi)
 {
+
+	//DFZ: for metadata benchmark only:
+//	return 0;
+
 	int retstat = 0;
 	char fpath[PATH_MAX] = {0};
 	fusion_fullpath(fpath, path);
@@ -874,9 +888,6 @@ int fusion_release(const char *path, struct fuse_file_info *fi)
 	// We need to close the file.  Had we allocated any resources
 	// (buffers etc) we'd need to free them here as well.
 	retstat = close(fi->fh);
-
-	/*DFZ: uncomment this for metadata benchmark*/
-	//return 0;
 
 	/*if this is just a local IO, we are all set
 	 *
@@ -944,9 +955,9 @@ int fusion_release(const char *path, struct fuse_file_info *fi)
 			zht_update(path, myip);
 		}
 
-		/*update replicas anyways*/
-		ffs_sendfile_c("udt", prev_ip, "9000", fpath, fpath);
-		ffs_sendfile_c("udt", next_ip, "9000", fpath, fpath);
+		/*To enable replicas, uncomment the following*/
+//		ffs_sendfile_c("udt", prev_ip, "9000", fpath, fpath);
+//		ffs_sendfile_c("udt", next_ip, "9000", fpath, fpath);
 
 		log_msg("\n=========DFZ debug _release(): %s updated and sync'ed to <%s> and <%s>. \n\n", fpath, prev_ip, next_ip);
 
@@ -1417,9 +1428,10 @@ int fusion_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 	if (zht_insert(path, addr))
 		log_msg("\n================ERROR _create(): failed to insert <%s, %s> to ZHT. \n", path, addr);
 
+	//DFZ: for metadata benchmark only:
+	//return 0;
 
 	/*create the local file*/
-	//DFZ: comment the following for metadata benchmark test only, i.e. file creation
 	fd = creat(fpath, mode);
 	if (fd < 0)
 		retstat = fusion_error("fusion_create creat");
@@ -1476,9 +1488,15 @@ int fusion_fgetattr(const char *path, struct stat *statbuf,
 		struct fuse_file_info *fi) {
 	int retstat = 0;
 
+	//DFZ: for metadata benchmark only:
+//	log_msg("\n dfz debug: in _fgetattr(). \n");
+//	return 0;
+
 	log_msg("\nfusion_fgetattr(path=\"%s\", statbuf=0x%08x, fi=0x%08x)\n", path,
 			statbuf, fi);
 	log_fi(fi);
+
+
 
 	retstat = fstat(fi->fh, statbuf);
 	if (retstat < 0)
