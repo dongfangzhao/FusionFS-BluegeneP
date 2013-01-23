@@ -13,5 +13,6 @@ int zht_remove(const char *key);
 
 int net_getmyip(char *ip);
 int net_neighborIP(char*, char*, char*);
+void* net_migrate(void *ptr);
 
 #endif

@@ -45,6 +45,29 @@
 #include "log.h"
 #include "util.h"
 
+int ffs_sendfile_c(const char *proto, const char *remote_ip, const char *server_port, const char *local_filename, const char *remote_filename);
+
+/*
+ * pthread for replica
+ *
+ */
+void* net_migrate(void *ptr)
+{
+	file_migration *fmp = (file_migration *)ptr;
+
+	int tid = -1;
+	char dest[1024];
+	char filename[PATH_MAX];
+
+	tid = fmp->tid;
+	strcpy(dest, fmp->dest);
+	strcpy(filename, fmp->filename);
+
+	ffs_sendfile_c("udt", dest, "9000", filename, filename);
+
+	return NULL;
+}
+
 /*
  * return the IP of prev and next node.
  */

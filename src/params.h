@@ -33,4 +33,12 @@ struct fusion_state {
 #define ZHT_MAX_BUFF 1<<16 /*ZHT only supports up to 64KB per msg*/
 ENTRY e, *ep; /* Global hash table entry */
 
+/*pthread for file migration*/
+typedef struct _file_migration
+{
+	int tid;
+	char dest[1024]; /*remote ip to where the file is migrated to*/
+	char filename[PATH_MAX]; /*file to migrate*/
+} file_migration;
+
 #endif

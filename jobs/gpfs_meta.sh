@@ -12,7 +12,7 @@ myip=`/home/dzhao/torusIP.sh`
 
 for j in {1..1} #1 processes per node 
 do
-	/home/dzhao/jobs/gpfs_meta_thread.sh $myip &
+	/home/dzhao/fusionFS-github/jobs/gpfs_meta_thread.sh $myip &
 done
 
 #give me one hour to do something on FusionFS

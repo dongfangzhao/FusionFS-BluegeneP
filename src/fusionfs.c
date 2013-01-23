@@ -58,6 +58,7 @@
 #include <sys/types.h>
 #include <sys/xattr.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 #include "log.h"
 #include "./zht/inc/c_zhtclient.h"
@@ -833,6 +834,8 @@ int fusion_flush(const char *path, struct fuse_file_info *fi)
 	return retstat;
 }
 
+
+
 /** Release an open file
  *
  * Release is called when there are no more references to an open
@@ -958,8 +961,30 @@ int fusion_release(const char *path, struct fuse_file_info *fi)
 		/*To enable replicas, uncomment the following*/
 //		ffs_sendfile_c("udt", prev_ip, "9000", fpath, fpath);
 //		ffs_sendfile_c("udt", next_ip, "9000", fpath, fpath);
-
 		log_msg("\n=========DFZ debug _release(): %s updated and sync'ed to <%s> and <%s>. \n\n", fpath, prev_ip, next_ip);
+
+		/*asynchronous replicas*/
+		pthread_t td1, td2;
+		file_migration fm1, fm2;
+
+		fm1.tid = td1;
+		strcpy(fm1.dest, prev_ip);
+		strcpy(fm1.filename, fpath);
+
+		fm2.tid = td2;
+		strcpy(fm2.dest, next_ip);
+		strcpy(fm2.filename, fpath);
+
+		if (pthread_create(&td1, NULL, &net_migrate, (void*)&fm1))
+		{
+			log_msg("\n Failed to create thread to migrate replicas. \n");
+		}
+
+		if (pthread_create(&td2, NULL, &net_migrate, (void*)&fm2))
+		{
+			log_msg("\n Failed to create thread to migrate replicas. \n");
+		}
+
 
 		/*TODO: potentially, need to update the parent directory in ZHT
 		 * because the physical directory is also created in the new node*/
