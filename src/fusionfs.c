@@ -958,12 +958,12 @@ int fusion_release(const char *path, struct fuse_file_info *fi)
 			zht_update(path, myip);
 		}
 
-		/*To enable replicas, uncomment the following*/
+		/*To enable synchronous replicas, uncomment the following*/
 //		ffs_sendfile_c("udt", prev_ip, "9000", fpath, fpath);
 //		ffs_sendfile_c("udt", next_ip, "9000", fpath, fpath);
 		log_msg("\n=========DFZ debug _release(): %s updated and sync'ed to <%s> and <%s>. \n\n", fpath, prev_ip, next_ip);
 
-		/*asynchronous replicas*/
+		/*asynchronous replicas
 		pthread_t td1, td2;
 		file_migration fm1, fm2;
 
@@ -984,7 +984,7 @@ int fusion_release(const char *path, struct fuse_file_info *fi)
 		{
 			log_msg("\n Failed to create thread to migrate replicas. \n");
 		}
-
+*/	
 
 		/*TODO: potentially, need to update the parent directory in ZHT
 		 * because the physical directory is also created in the new node*/

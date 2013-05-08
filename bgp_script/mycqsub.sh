@@ -1,3 +1,3 @@
-rm ~/persistent/result_fusionfs
-rm ~/persistent/neighbor
-cqsub -p FusionFS -k zepto-vn-eval -n 16 -t 60 fusionfs.sh
+numNode=$1
+t=$2
+cqsub -p FusionFS -k zepto-vn-eval -n $numNode -t $t  r-node_start_general_stage.sh $numNode #fusionfs.sh

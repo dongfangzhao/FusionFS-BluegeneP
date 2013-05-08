@@ -10,9 +10,9 @@ function convert()
 
 myip=`/home/dzhao/torusIP.sh`
 
-for j in {1..1} #1 processes per node 
+for j in {1..4} #1 processes per node 
 do
-	/home/dzhao/fusionFS-github/jobs/gpfs_meta_thread.sh $myip &
+	/home/dzhao/fusionFS-github/jobs/gpfs_meta_thread.sh $myip $j &
 done
 
 #give me one hour to do something on FusionFS

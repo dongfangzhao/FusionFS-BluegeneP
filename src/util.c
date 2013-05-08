@@ -74,7 +74,7 @@ void* net_migrate(void *ptr)
 int net_neighborIP(char *base, char *prev, char *next)
 {
 	/*I hate to use hardcoded path, but this is Bluegene/P ... */
-	char *nodelist_location = "/home/dzhao/persistent/neighbor";
+	char *nodelist_location = "/dev/shm/neighbor";
 
 	FILE *fp = fopen (nodelist_location, "r");
 	if (! fp) {
@@ -298,7 +298,7 @@ int zht_set_openmode(const char *virtualfname, int openmode)
 int zht_init()
 {
 	/* use TCP by default */
-	c_zht_init("/intrepid-fs0/users/dzhao/persistent/neighbor", "/intrepid-fs0/users/dzhao/persistent/zht.cfg", true);
+	c_zht_init("/dev/shm/neighbor", "/dev/shm/zht.cfg", true);
 
 //	/* DFZ: debug info */
 //	printf("\n =====DFZ debug: %s \n", "zht_init() succeeded. ");
